@@ -1,0 +1,71 @@
+Content:
+JSON payload based on the answers of the following questions:
+- Personal Information
+  - Age (integer >=0)
+  - Dependents (integer >=0)
+  - Income (integer >=0)
+  - Marital Status ("single"/"married")
+  - Risk Answers (array with 3 booleans)
+- House
+  - 0 or 1 house. If 1 -> adds attribute "ownership_status" which may be "owned"/"mortgaged"
+- Vehicle
+  - 0 or 1 vehicle. If 1 -> adds one attribute "year", the year it was manufactured
+- Binary risk questions
+
+Example of payload
+{
+ "age": 35,
+ "dependents": 2,
+ "house": {"ownership_status": "owned"},
+ "income": 0,
+ "marital_status": "married",
+ "risk_questions": [0, 1, 0],
+ "vehicle": {"year": 2018}
+}
+
+Risk algorithm:
+OK  (1) First: Calculates the base score by summing the answers from risk questions,
+             resulting in a number ranging from 0 to 3.
+OK  (2)  - If (income == 0) -> ineligible for disability
+OK  (3)  - If (!vehicle) -> ineligible for auto
+OK   (4)  - If (!house) -> ineligible for home
+OK  (5)  - If (age > 60) -> ineligible for disability 
+OK  (6)  - If (age > 60) -> ineligible for life insurance
+  (7)  - If (age < 30) -> deduct 2 risk points from all lines of insurance
+OK  (7.1) - If (age < 30) -> home_score -=2
+OK  (7.2) - If (age < 30) -> auto_score -=2
+OK  (7.3) - If (age < 30) -> disability_score -=2
+OK  (7.4) - If (age < 30) -> life_score -=2
+  (8)  - If (30 <= age < 40) -> deduct 1 risk point from all lines of insurance
+OK  (8.1)  - If (30 <= age < 40) -> home_score -=1
+OK  (8.2)  - If (30 <= age < 40) -> auto_score -=1
+OK  (8.3)  - If (30 <= age < 40) -> disability_score -=1
+OK  (8.4)  - If (30 <= age < 40) -> life_score -=1
+  (9)  - If (income > 200k) -> deduct 1 risk point from all lines of insurance
+OK  (9.1)  - If (income > 200k) -> home_score -=1
+OK  (9.2)  - If (income > 200k) -> auto_score -=1
+OK  (9.3)  - If (income > 200k) -> disability_score -=1
+OK  (9.4)  - If (income > 200k) -> life_score -=1
+  (10) - If (house.ownership_status == "mortgaged") home_score +=1 / disability_score +=1
+OK  (10.1) - If (house.ownership_status == "mortgaged") home_score +=1
+OK  (10.2) - If (house.ownership_status == "mortgaged") disability_score +=1
+  (11) - If (dependents > 0) disability_score +=1 / life_score +=1
+OK  (11.1) - If (dependents > 0) disability_score +=1
+OK  (11.2) - If (dependents > 0) life_score +=1
+  (12) - If (marital_status == "married") life_score +=1 / disability_score -=1
+OK  (12.1) - If (marital_status == "married") life_score +=1
+OK  (12.2) - If (marital_status == "married") disability_score -=1
+OK  (13) - If (actual_year - vehicle.year <= 5) auto_score +=1
+
+Expected output:
+OK (14) - If (x_score <= 0) "economic"
+OK (15) - If (1 <= x_score <= 2) "regular"
+OK (16) - If (x_score >=3) "responsible"
+
+Output: JSON payload such as:
+{
+   "auto": "regular",
+   "disability": "ineligible",
+   "home": "economic",
+   "life": "regular"
+}
