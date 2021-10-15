@@ -10,7 +10,7 @@
 import json
 from datetime import date
 
-class riskCalcEngine:
+class RiskCalcEngine:
     """
     Class responsible for manipulating the user 
     input payload data and calculating his/her insurance needs.
@@ -22,7 +22,7 @@ class riskCalcEngine:
     Attibutes
     _________
     pD : dict
-        A dictionary that will receive the json data decoded
+        A dictionary that will receive the data from the user input
     cD : dict
         A dictionary meant to store calculation data
 
@@ -50,19 +50,19 @@ class riskCalcEngine:
 
     """
 
-    def __init__(self, payload: json):
+    def __init__(self, payload):
         """
-        Constructor method meant to decode json payload
-        and to create an internal dict to store calculation data.
+        Constructor method meant to receive the user data
+        and to create a dictionary to store calculation data.
 
         Parameters
         __________
-        payload : json
-            The json payload received by the front-end.
+        payload : dict
+            The payload received by the front-end.
 
          """
 
-        self.pD = json.loads(payload)
+        self.pD = payload
         # pD stands for payloadData
         self.cD = {}
         # cD stands for calculationData, this dict will
@@ -113,7 +113,7 @@ class riskCalcEngine:
             if (isinstance(self.pD["vehicle"],int) == False): # From here we may calculate autoScore
                 autoScore = self.cD["baseScore"]
                 self.cD["autoEligibility"] = 1
-                if (date.today().year - self.pD["vehicle"]["year"] < 5): # Rule 13
+                if (date.today().year - self.pD["vehicle"]["year"] <= 5): # Rule 13
                     autoScore += 1
                 if (self.pD["age"]<40): # Rule 8.2
                     autoScore -= 1

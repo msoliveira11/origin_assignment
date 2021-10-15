@@ -9,7 +9,9 @@
 #######################################
 
 import calc_interface as ci
+import risk_calc_engine as rce 
 import json
+import requests
 
 # Test 1 - Provided within problem specification
 
@@ -106,8 +108,9 @@ test5Output = '{ \
    "life": "responsible" \
     }'
 
-def runTest(test : int, inputJson : json, outputJson : json) -> int:
-    executionOutput = ci.calculateRisk(inputJson)
+def runUnitTest(test : int, inputJson : json, outputJson : json) -> int:
+    rceObj = rce.RiskCalcEngine(json.loads(inputJson))
+    executionOutput = rceObj.calculateRisk()
     outputDict = json.loads(executionOutput)
     referenceDict = json.loads(outputJson)
     insurances = ["auto","disability","home","life"]
@@ -115,28 +118,56 @@ def runTest(test : int, inputJson : json, outputJson : json) -> int:
     for ins in insurances:
         if (outputDict[ins] != referenceDict[ins]):
             success = False
-            print("Test " + str(test) + ": " + ins + \
-                  " Expected: " + referenceDict[ins] + \
-                  " Received: " + outputDict[ins] + '\n')
+            print("unittest " + str(test) + ": " + ins + \
+                  " expected: " + referenceDict[ins] + \
+                  " received: " + outputDict[ins])
     if (success): return 1
     return 0
- 
-def main():
-    testsOk = 0;
-    tests = 0;
-    testsOk += runTest(1,test1Input,test1Output)
-    tests += 1
-    testsOk += runTest(2,test2Input,test2Output)
-    tests += 1
-    testsOk += runTest(3,test3Input,test3Output)
-    tests += 1
-    testsOk += runTest(4,test4Input,test4Output)
-    tests += 1
-    testsOk += runTest(5,test5Input,test5Output)
-    tests += 1
 
-    print(str(testsOk) + " tests from " + str(tests) + \
+def runFullTest(test : int,inputJson : json, outputJson : json) -> int:
+    url = 'http://127.0.0.2:5000/risk'
+    payload = inputJson
+    headers = {'content-type': 'application/json'}
+    r = (requests.post(url, data=payload, headers=headers))
+    outputDict = json.loads(r.text)
+    referenceDict = json.loads(outputJson)
+    insurances = ["auto","disability","home","life"]
+    success = True
+    for ins in insurances:
+        if (outputDict[ins] != referenceDict[ins]):
+            success = False
+            print("Full test " + str(test) + ": " + ins + \
+                  " expected: " + referenceDict[ins] + \
+                  " received: " + outputDict[ins])
+    if (success): return 1
+    return 0
+
+def main():
+    testInput = []
+    testOutput = []
+    testInput.append(test1Input)
+    testInput.append(test2Input)
+    testInput.append(test3Input)
+    testInput.append(test4Input)
+    testInput.append(test5Input)
+    testOutput.append(test1Output)
+    testOutput.append(test2Output)
+    testOutput.append(test3Output)
+    testOutput.append(test4Output)
+    testOutput.append(test5Output)
+
+    unitTestsOk = 0
+    fullTestsOk = 0
+    for test in range(len(testInput)): 
+        fullTestsOk += runFullTest(test,test1Input,test1Output)
+        unitTestsOk += runUnitTest(test,test1Input,test1Output)
+
+    print(str(unitTestsOk) + " unit tests out of " + str(len(testInput)) + \
           " were succesfully executed." + '\n')
+
+    print(str(fullTestsOk) + " full tests out of " + str(len(testInput)) + \
+          " were succesfully executed.")
+
 
 if __name__ == "__main__":
     main()
