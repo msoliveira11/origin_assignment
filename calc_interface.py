@@ -17,6 +17,14 @@ app = flask.Flask(__name__)
 
 @app.route("/risk",methods = ["POST"])
 def calculateRisk():
+    """
+    This method exposes the "risk" endpoint where the calculation method
+    is called.
+    Before starting the calculation, it calls another method responsible
+    for verifying if the data received from the front-end is correct. If
+    it has issues, return an error.
+    If the data is fine, returns the insurances profiles.
+    """
     calcDict = flask.request.json
     calc = rce.RiskCalcEngine(calcDict)
     success = checkPayloadIntegrity(calcDict)
@@ -28,11 +36,18 @@ def calculateRisk():
 
 @app.after_request
 def add_header(response):
+    """
+    Sets the response header to JSON.
+    """
     response.headers['Content-Type'] = 'application/JSON'
     return response 
 
 # private methods
 def checkPayloadIntegrity(payloadDict):
+    """
+    Checks if the input data received from the front-end
+    is complete and if its' values are valid.
+    """
     success = True
     # Checking age
     if "age" in payloadDict:
@@ -46,12 +61,13 @@ def checkPayloadIntegrity(payloadDict):
         success = False
     # Checking house data
     if "house" in payloadDict:
-        if "ownership_status" in payloadDict["house"]:
-            if payloadDict["house"]["ownership_status"] != "owned" and \
-               payloadDict["house"]["ownership_status"] != "mortgaged":
-                success = False
-        else:
-            payloadDict["house"] = 0
+        if (isinstance(payloadDict["house"],int) == False): 
+            if "ownership_status" in payloadDict["house"]:
+                if payloadDict["house"]["ownership_status"] != "owned" and \
+                   payloadDict["house"]["ownership_status"] != "mortgaged":
+                    success = False
+            else:
+                payloadDict["house"] = 0
     else:
         success = False
     # Checking income
@@ -61,11 +77,12 @@ def checkPayloadIntegrity(payloadDict):
         success = False
     # Checking vehicle data
     if "vehicle" in payloadDict:
-        if "year" in payloadDict["vehicle"]:
-            if payloadDict["vehicle"]["year"] < 1900:
-                success = False
-        else:
-            payloadDict["vehicle"] = 0
+        if (isinstance(payloadDict["vehicle"],int) == False): 
+            if "year" in payloadDict["vehicle"]:
+                if payloadDict["vehicle"]["year"] < 1900:
+                    success = False
+            else:
+                payloadDict["vehicle"] = 0
     else:
         success = False
     # Checking marital_status

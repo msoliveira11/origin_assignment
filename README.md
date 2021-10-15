@@ -30,9 +30,16 @@ without instatiang any class.
 
 (1) How to run:
 
-If you are working in a Linux environment, you may run the test script "run_tests.py"
-via terminal using the following command:
-$ ./run_tests.py
+To execute the application, you will need "Flask" and "Requests" python libraries installed.
+You may find info about them here:
+https://docs.python-requests.org/en/latest/user/install/#install
+https://flask.palletsprojects.com/en/2.0.x/installation
+
+First, run "calc_interface.py" to start the "server" that will receive the user data.
+Note: You must keep it running, so if you run it in a terminal, for example, this
+terminal will remain blocked till the end of execution.
+
+Then, run the test script "run_tests.py".
 If it fails to execute, please check if you have permission to execute. If not, please run:
 $ chmod +x run_tests.py
 Or run using this command:
@@ -44,8 +51,5 @@ $ python3
 >>> run_tests.main()
 
 If you wish to import the code to your own application, you may:
-- Import the calculation class. Please check "calc_interface.py" lines 12 and 15
+- Import the calculation class. Please check "calc_interface.py" lines 14 and 21
 to see an example.
-- Import the interface file. Please check "run_tests.py" lines 11 and 110
-to see an example.
-

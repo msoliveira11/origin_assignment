@@ -5,10 +5,11 @@
 # author: Matheus Santos de Oliveira  #
 # date: 12/10/2021                    #
 # contact: msoliveira.eca@gmail.com   #
-# description: test executor          #
+# description: script meant to run    #
+# automated tests using both raw      #
+# methods and the endpoint.           #
 #######################################
 
-import calc_interface as ci
 import risk_calc_engine as rce 
 import json
 import requests
@@ -109,6 +110,10 @@ test5Output = '{ \
     }'
 
 def runUnitTest(test : int, inputJson : json, outputJson : json) -> int:
+    """
+    This method focus on the test of the calculation method itself.
+    It instantiates the calculation class and uses its' method.
+    """
     rceObj = rce.RiskCalcEngine(json.loads(inputJson))
     executionOutput = rceObj.calculateRisk()
     outputDict = json.loads(executionOutput)
@@ -124,7 +129,13 @@ def runUnitTest(test : int, inputJson : json, outputJson : json) -> int:
     if (success): return 1
     return 0
 
-def runFullTest(test : int,inputJson : json, outputJson : json) -> int:
+def runFullTest(test : int, inputJson : json, outputJson : json) -> int:
+    """
+    This method focus on simulating the complete use of the API,
+    starting from receiving data from the front-end application.
+    It calls the endpoint and sends what would be the user data.
+    Then it evaluates what was the response.
+    """
     url = 'http://127.0.0.2:5000/risk'
     payload = inputJson
     headers = {'content-type': 'application/json'}
@@ -159,8 +170,8 @@ def main():
     unitTestsOk = 0
     fullTestsOk = 0
     for test in range(len(testInput)): 
-        fullTestsOk += runFullTest(test,test1Input,test1Output)
-        unitTestsOk += runUnitTest(test,test1Input,test1Output)
+        fullTestsOk += runFullTest(test,testInput[test],testOutput[test])
+        unitTestsOk += runUnitTest(test,testInput[test],testOutput[test])
 
     print(str(unitTestsOk) + " unit tests out of " + str(len(testInput)) + \
           " were succesfully executed." + '\n')
